@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#141210">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TAKT">
+<meta name="mobile-web-app-capable" content="yes">
+<title>TAKT – Trainingsplan</title>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<style>
+  :root{
+    --bg:#141210;
+    --surface:#1c1a17;
+    --surface2:#242220;
+    --border:#2f2c28;
+    --border-dash:#3a362f;
+    --ink:#f4f2ec;
+    --ink-soft:#a8a39a;
+    --ink-faint:#6b6760;
+    --lime:#C6FF4D;
+    --red:#ff6b57;
+    --lauf:#e8825a;
+    --kraft:#e5583f;
+    --mobility:#5aa8c9;
+    --warmup:#b48fd6;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    overscroll-behavior-y:none; -webkit-user-select:none; user-select:none;}
+  input,textarea{-webkit-user-select:text; user-select:text;}
+  input,textarea,button{font-family:inherit;}
+  button{cursor:pointer;}
+  #app{max-width:520px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; position:relative;}
+
+  .topbar{position:sticky; top:0; z-index:20; background:var(--bg); border-bottom:1px solid var(--border);}
+  .topbar-row{display:flex; align-items:center; justify-content:space-between; padding:calc(env(safe-area-inset-top) + 16px) 16px 12px;}
+  .brand{display:flex; align-items:center; gap:8px;}
+  .brand-name{font-size:17px; font-weight:800; letter-spacing:0.03em;}
+  .dot{width:7px; height:7px; border-radius:50%;}
+  .icon-btn{background:var(--surface2); border:1px solid var(--border); color:var(--ink-soft); width:36px; height:36px; border-radius:50%; font-size:15px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .subbar{display:flex; align-items:center; gap:10px; padding:calc(env(safe-area-inset-top) + 14px) 16px 14px;}
+  .back-btn{background:var(--surface2); border:1px solid var(--border); color:var(--ink); width:36px; height:36px; border-radius:50%; font-size:18px; flex-shrink:0; display:flex; align-items:center; justify-content:center;}
+  .subbar-title{font-size:17px; font-weight:700;}
+  .subbar-sub{font-size:12.5px; color:var(--ink-soft);}
+  .plan-name-input{flex:1; background:transparent; border:none; color:var(--ink); font-size:17px; font-weight:700; padding:6px 0; outline:none;}
+  .delete-link{background:transparent; border:none; color:var(--red); font-size:13px; flex-shrink:0;}
+
+  .content{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+  .view-pad{padding:20px 16px 110px; display:flex; flex-direction:column; gap:12px;}
+  .view-pad.sub{padding:16px 16px 130px; gap:10px;}
+  .view-title{font-size:28px; font-weight:700; letter-spacing:-0.02em; margin-bottom:2px;}
+
+  .day-card{background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:10px;}
+  .day-card-head{display:flex; justify-content:space-between; align-items:baseline;}
+  .day-card-left{display:flex; align-items:baseline; gap:8px;}
+  .day-label{font-size:17px; font-weight:600;}
+  .day-date{font-size:13px; color:var(--ink-soft);}
+  .day-total{font-size:13px; color:var(--ink-soft);}
+  .segments{display:flex; gap:3px; height:8px; border-radius:4px; overflow:hidden;}
+  .segments > div{height:100%;}
+  .chips-row{display:flex; gap:6px; flex-wrap:wrap;}
+  .chip{font-size:12px; color:var(--ink-soft); background:var(--surface2); padding:4px 8px; border-radius:8px;}
+  .empty-inline{font-size:13px; color:var(--ink-faint);}
+  .empty-block{text-align:center; color:var(--ink-faint); font-size:14px; padding:60px 24px; line-height:1.6;}
+
+  .item-card{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px; display:flex; align-items:center; gap:12px; touch-action:none; position:relative;}
+  .item-bar{width:8px; height:36px; border-radius:4px; flex-shrink:0;}
+  .item-main{flex:1; min-width:0;}
+  .item-name{font-size:15px; font-weight:600;}
+  .item-meta{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+  .remove-btn{background:var(--surface2); border:none; color:var(--ink-soft); width:30px; height:30px; border-radius:50%; font-size:16px; flex-shrink:0;}
+
+  .plan-card{background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:8px;}
+  .plan-card-head{display:flex; justify-content:space-between;}
+  .plan-card-name{font-size:16px; font-weight:600;}
+  .plan-card-count{font-size:13px; color:var(--ink-soft);}
+  .new-plan-btn{margin-top:4px; background:var(--surface2); border:1px dashed var(--border-dash); color:var(--lime); border-radius:14px; padding:16px; font-size:15px; font-weight:600;}
+
+  .search-input{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; color:var(--ink); font-size:15px; outline:none; width:100%;}
+  .search-input::placeholder{color:var(--ink-faint);}
+  .chip-row{display:flex; gap:8px; overflow-x:auto; padding-bottom:2px;}
+  .cat-chip{flex-shrink:0; padding:8px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--ink-soft); font-size:13px; white-space:nowrap;}
+  .cat-chip.active{border-color:var(--lime); background:rgba(198,255,77,0.12); color:var(--lime);}
+  .lib-item{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px; display:flex; align-items:center; gap:12px;}
+
+  .bottom-nav{position:fixed; bottom:0; left:0; right:0; max-width:520px; margin:0 auto; background:var(--surface); border-top:1px solid var(--border); display:flex; padding:8px 8px calc(8px + env(safe-area-inset-bottom)); gap:6px; z-index:40;}
+  .nav-btn{flex:1; padding:10px 4px; border-radius:12px; border:none; font-size:12.5px; font-weight:600; background:transparent; color:var(--ink-soft);}
+  .nav-btn.active{background:var(--surface2); color:var(--lime);}
+
+  .fab{position:fixed; bottom:24px; right:calc(50% - 260px + 20px); width:56px; height:56px; border-radius:50%; background:var(--lime); color:var(--bg); font-size:28px; line-height:1; border:none; box-shadow:0 8px 24px rgba(198,255,77,0.35); z-index:50; display:flex; align-items:center; justify-content:center;}
+  @media (max-width:559px){ .fab{ right:20px; } }
+
+  .overlay{position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:100; display:flex; align-items:flex-end;}
+  .sheet{background:var(--surface); width:100%; max-width:520px; margin:0 auto; border-radius:24px 24px 0 0; padding:24px 20px 36px; max-height:82vh; overflow-y:auto;}
+  .sheet-handle{width:36px; height:4px; background:var(--border-dash); border-radius:2px; margin:0 auto 18px;}
+  .md-cat-row{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+  .md-cat-dot{width:10px; height:10px; border-radius:50%;}
+  .md-cat-label{font-size:12px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.05em;}
+  .md-name{font-size:22px; font-weight:700; margin-bottom:4px;}
+  .md-meta{font-size:13px; color:var(--ink-soft); margin-bottom:20px;}
+  .md-h{font-size:13px; font-weight:700; color:var(--lime); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;}
+  .md-why{font-size:15px; line-height:1.5; margin-bottom:20px;}
+  .md-step{display:flex; gap:10px; margin-bottom:10px;}
+  .md-step-n{width:22px; height:22px; border-radius:50%; background:var(--surface2); color:var(--ink-soft); font-size:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .md-step-text{font-size:14.5px; line-height:1.5;}
+
+  .add-sheet{padding:20px 16px 24px; display:flex; flex-direction:column;}
+  .add-tabs{display:flex; gap:8px; margin-bottom:16px;}
+  .add-tab{flex:1; padding:10px; border-radius:10px; border:none; font-size:13.5px; font-weight:600; background:var(--surface2); color:var(--ink-soft);}
+  .add-tab.active{background:var(--lime); color:var(--bg);}
+  .add-body{overflow-y:auto; display:flex; flex-direction:column; gap:8px; flex:1;}
+  .add-plan-row{background:var(--surface2); border-radius:12px; padding:14px; display:flex; justify-content:space-between; align-items:center;}
+  .add-lib-row{background:var(--surface2); border-radius:12px; padding:14px; display:flex; align-items:center; gap:10px;}
+  .add-lib-name{font-size:14.5px; font-weight:600;}
+  .add-lib-meta{font-size:12px; color:var(--ink-soft);}
+  .add-plus{color:var(--lime); font-size:20px;}
+  .done-btn{margin-top:14px; background:var(--lime); color:var(--bg); border:none; border-radius:12px; padding:14px; font-size:15px; font-weight:700; flex-shrink:0;}
+
+  .settings-row{display:flex; align-items:center; gap:8px; margin-bottom:6px;}
+  .settings-label{font-size:13.5px; color:var(--ink-soft);}
+  .settings-note{font-size:12.5px; color:var(--ink-faint); line-height:1.5; margin-bottom:4px;}
+  .settings-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;}
+  .settings-title{font-size:19px; font-weight:700;}
+
+  .loading-screen{min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); color:var(--ink-soft); font-size:14px;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-database-compat.js"></script>
+<script>
+/* ---------- Daten ---------- */
+const DAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+const DAY_LABELS = { Mo: 'Montag', Di: 'Dienstag', Mi: 'Mittwoch', Do: 'Donnerstag', Fr: 'Freitag', Sa: 'Samstag', So: 'Sonntag' };
+
+const CATEGORY_META = {
+  lauf: { label: 'Lauf', color: 'var(--lauf)' },
+  kraft: { label: 'Kraft', color: 'var(--kraft)' },
+  mobility: { label: 'Mobility & Regeneration', color: 'var(--mobility)' },
+  warmup: { label: 'Aufwärmen & Cool-down', color: 'var(--warmup)' },
+};
+const CATEGORY_ORDER = ['lauf', 'kraft', 'mobility', 'warmup'];
+
+const MODULES = [
+  { id: 'l1', name: 'Easy Run 30', category: 'lauf', equipment: 'Laufschuhe', duration: 30, why: 'Baut die aerobe Grundlage auf und fördert aktive Erholung, ohne das System zu belasten.', steps: ['5 Min. zügig gehen zum Einlaufen', '30 Min. lockeres Tempo – Unterhalten sollte problemlos möglich sein', '5 Min. auslaufen'] },
+  { id: 'l2', name: 'Long Run 60', category: 'lauf', equipment: 'Laufschuhe', duration: 60, why: 'Trainiert die Grundlagenausdauer und die Fettverbrennung über längere Distanzen.', steps: ['10 Min. langsam einlaufen', '45 Min. konstantes, entspanntes Tempo', '5 Min. auslaufen und dehnen'] },
+  { id: 'l3', name: 'Long Run 90', category: 'lauf', equipment: 'Laufschuhe', duration: 90, why: 'Verbessert die Ausdauer für lange Belastungen und die mentale Widerstandsfähigkeit.', steps: ['10 Min. einlaufen', '70 Min. gleichmäßiges Tempo, alle 20 Min. kurz trinken', '10 Min. auslaufen'] },
+  { id: 'l4', name: 'Tempo-Intervalle 5x3min', category: 'lauf', equipment: 'Laufschuhe', duration: 40, why: 'Hebt die anaerobe Schwelle und macht schneller auf mittleren Distanzen.', steps: ['10 Min. Warm-up', '5x 3 Min. im Schwellentempo, dazwischen 2 Min. Trabpause', '10 Min. Cool-down'] },
+  { id: 'l5', name: 'Bergsprints 8x20s', category: 'lauf', equipment: 'Steigung/Hügel', duration: 30, why: 'Baut explosive Kraft und Lauf-Ökonomie auf, schont dabei die Gelenke.', steps: ['10 Min. Einlaufen inkl. Steigerungsläufe', '8x 20 Sek. Sprint bergauf, locker zurückgehen', '5 Min. Auslaufen'] },
+  { id: 'l6', name: 'Fahrtspiel 40min', category: 'lauf', equipment: 'Laufschuhe', duration: 40, why: 'Spielerisches Tempowechsel-Training, verbessert Anpassungsfähigkeit und Renntempogefühl.', steps: ['10 Min. locker einlaufen', '20 Min. freie Tempowechsel nach Gefühl (schnell/locker)', '10 Min. auslaufen'] },
+  { id: 'l7', name: 'Steady State 45min', category: 'lauf', equipment: 'Laufschuhe', duration: 45, why: 'Schwellentraining am Stück – verbessert die Fähigkeit, Tempo über Zeit zu halten.', steps: ['10 Min. Einlaufen', '25 Min. im Schwellentempo (angestrengt, aber kontrolliert)', '10 Min. Auslaufen'] },
+  { id: 'l8', name: 'Recovery Run 20', category: 'lauf', equipment: 'Laufschuhe', duration: 20, why: 'Fördert die Durchblutung und Regeneration nach intensiven Einheiten.', steps: ['20 Min. sehr lockeres Tempo, Fokus auf Entspannung', 'Kein Zeit- oder Tempodruck'] },
+  { id: 'k1', name: 'Kettlebell Swings 5x15', category: 'kraft', equipment: 'Kettlebell', duration: 15, why: 'Trainiert die hintere Kette explosiv und stärkt Hüfte und Rumpf.', steps: ['5 Min. Hüft-Aufwärmen', '5 Sätze à 15 Swings, 60 Sek. Pause', 'Fokus: Hüftstreckung, nicht mit dem Rücken heben'] },
+  { id: 'k2', name: 'Kettlebell Clean & Press 4x8/Seite', category: 'kraft', equipment: 'Kettlebell', duration: 20, why: 'Ganzkörper-Kraftübung, verbindet Hüftkraft mit Schulterstabilität.', steps: ['Aufwärmen Schulter/Hüfte', '4 Sätze à 8 Wdh. pro Seite', 'Saubere Technik vor Tempo'] },
+  { id: 'k3', name: 'Kettlebell Turkish Get-Up 3x5/Seite', category: 'kraft', equipment: 'Kettlebell', duration: 20, why: 'Verbessert Ganzkörperstabilität, Schulterkraft und Koordination.', steps: ['Bewegung zunächst ohne Gewicht durchgehen', '3 Sätze à 5 Wiederholungen pro Seite', 'Langsam und kontrolliert ausführen'] },
+  { id: 'k4', name: 'Kettlebell Goblet Squat 4x12', category: 'kraft', equipment: 'Kettlebell', duration: 15, why: 'Kräftigt Beine und Rumpf, schult eine saubere Kniebeuge.', steps: ['Kettlebell vor der Brust halten', '4 Sätze à 12 Wiederholungen', 'Knie tracken über die Fußspitzen'] },
+  { id: 'k5', name: 'Liegestütze-Pyramide', category: 'kraft', equipment: 'keine', duration: 12, why: 'Baut Kraft in Brust, Schulter und Trizeps ohne Geräte auf.', steps: ['2-4-6-8-6-4-2 Wiederholungen, kurze Pausen dazwischen', 'Bei Bedarf auf Knien ausführen'] },
+  { id: 'k6', name: 'Klimmzüge 5x Max', category: 'kraft', equipment: 'Klimmzugstange', duration: 15, why: 'Trainiert Rücken- und Griffkraft auf hohem Niveau.', steps: ['Aufwärmen mit Latzug-Bewegung ohne Gewicht', '5 Sätze bis nahe ans Muskelversagen, 90 Sek. Pause', 'Bei Bedarf mit Band unterstützen'] },
+  { id: 'k7', name: 'Pistol Squat Progression 4x6/Seite', category: 'kraft', equipment: 'keine', duration: 15, why: 'Einbeinige Kraft und Balance – anspruchsvolle Calisthenics-Übung.', steps: ['Mit assistierter Variante (Stuhl/Wand) beginnen', '4 Sätze à 6 Wiederholungen pro Seite', 'Kontrolliert absenken, kein Wippen'] },
+  { id: 'k8', name: 'Plank-Serie (3 Varianten)', category: 'kraft', equipment: 'keine', duration: 10, why: 'Baut Rumpfstabilität in mehreren Ebenen auf.', steps: ['Front Plank 45 Sek.', 'Side Plank je Seite 30 Sek.', 'Plank mit Schulterberührung 30 Sek.'] },
+  { id: 'k9', name: 'Ausfallschritte mit Kettlebell 4x10/Seite', category: 'kraft', equipment: 'Kettlebell', duration: 15, why: 'Einbeinige Kraft und Stabilität für Lauf-Ökonomie und Alltag.', steps: ['Kettlebell vor der Brust oder seitlich halten', '4 Sätze à 10 Wiederholungen pro Seite', 'Oberkörper aufrecht halten'] },
+  { id: 'k10', name: 'Dips an der Bank 4x12', category: 'kraft', equipment: 'Bank/Kasten', duration: 10, why: 'Kräftigt Trizeps und Schulter ohne zusätzliches Equipment.', steps: ['Hände schulterbreit auf der Bank', '4 Sätze à 12 Wiederholungen', 'Ellbogen nah am Körper führen'] },
+  { id: 'k11', name: 'Hollow Body Hold Intervalle', category: 'kraft', equipment: 'keine', duration: 10, why: 'Baut Rumpfspannung auf, wichtig für Kraftübertragung in allen Bewegungen.', steps: ['5x 20 Sek. Halten, 20 Sek. Pause', 'Unterer Rücken bleibt am Boden', 'Bei Bedarf Beine anwinkeln'] },
+  { id: 'k12', name: 'Bulgarian Split Squat 4x10/Seite', category: 'kraft', equipment: 'Bank', duration: 18, why: 'Intensive einbeinige Beinkraft, stärkt auch die Hüftstabilität.', steps: ['Hinteren Fuß auf der Bank ablegen', '4 Sätze à 10 Wiederholungen pro Seite', 'Optional mit Kettlebell erschweren'] },
+  { id: 'm1', name: 'Hüftöffner-Flow 10min', category: 'mobility', equipment: 'Matte', duration: 10, why: 'Löst Spannungen aus Hüftbeugern, wichtig nach dem Laufen und Sitzen.', steps: ['Taubenhaltung je Seite 90 Sek.', 'Hüftbeuger-Dehnung im Ausfallschritt je Seite 60 Sek.', '90/90-Position je Seite 60 Sek.'] },
+  { id: 'm2', name: 'Foam Rolling Ganzkörper', category: 'mobility', equipment: 'Faszienrolle', duration: 12, why: 'Fördert die Durchblutung und löst Verklebungen im Gewebe.', steps: ['Waden, Oberschenkel, Rücken je 90 Sek.', 'Langsam rollen, an Triggerpunkten kurz verweilen'] },
+  { id: 'm3', name: 'Thorax-Mobility 8min', category: 'mobility', equipment: 'keine', duration: 8, why: 'Verbessert Brustwirbelsäulen-Rotation für bessere Haltung und Laufform.', steps: ['Katze-Kuh 10 Wdh.', 'Offene Buch-Rotation je Seite 8 Wdh.', 'Thread the Needle je Seite 8 Wdh.'] },
+  { id: 'm4', name: 'Yoga für Läufer 15min', category: 'mobility', equipment: 'Matte', duration: 15, why: 'Kombiniert Dehnung und Atmung, entlastet typische Läufer-Spannungen.', steps: ['Herabschauender Hund 60 Sek.', 'Läufer-Ausfallschritt je Seite 60 Sek.', 'Sitzende Vorbeuge 90 Sek.'] },
+  { id: 'm5', name: 'Faszienrollen Beine', category: 'mobility', equipment: 'Faszienrolle', duration: 10, why: 'Gezielte Regeneration der stark beanspruchten Beinmuskulatur.', steps: ['Oberschenkel vorne/hinten je 90 Sek.', 'Waden je 60 Sek.', 'IT-Band je 60 Sek.'] },
+  { id: 'm6', name: 'Atemübung & Entspannung 10min', category: 'mobility', equipment: 'keine', duration: 10, why: 'Aktiviert das parasympathische Nervensystem, fördert Erholung.', steps: ['5 Min. Box Breathing (4-4-4-4)', '5 Min. ruhige Bauchatmung im Liegen'] },
+  { id: 'm7', name: 'Dehnroutine Oberkörper', category: 'mobility', equipment: 'keine', duration: 8, why: 'Löst Verspannungen in Schulter und Nacken nach Kraftübungen.', steps: ['Schulterdehnung je Seite 45 Sek.', 'Nackendehnung je Seite 30 Sek.', 'Brustdehnung im Türrahmen 60 Sek.'] },
+  { id: 'm8', name: 'Ischiocrurale Mobilisation', category: 'mobility', equipment: 'Matte', duration: 10, why: 'Verbessert die Beweglichkeit der Oberschenkelrückseite, beugt Verletzungen vor.', steps: ['Liegende Beinstreckung mit Band je Seite 60 Sek.', 'Stehende Vorbeuge 90 Sek.', 'Nerven-Flossing je Seite 10 Wdh.'] },
+  { id: 'w1', name: 'Dynamisches Aufwärmen 8min', category: 'warmup', equipment: 'keine', duration: 8, why: 'Bereitet Muskeln und Gelenke aktiv auf Belastung vor.', steps: ['Kniehebelauf 30 Sek.', 'Anfersen 30 Sek.', 'Ausfallschritte mit Rotation 8 pro Seite', 'Armkreisen 30 Sek.'] },
+  { id: 'w2', name: 'Lauf-ABC 10min', category: 'warmup', equipment: 'keine', duration: 10, why: 'Schult Lauftechnik und aktiviert die richtige Muskulatur.', steps: ['Skippings A 2x20m', 'Skippings B 2x20m', 'Anfersen 2x20m', 'Kniehebelauf 2x20m'] },
+  { id: 'w3', name: 'Aktivierung Rumpf 5min', category: 'warmup', equipment: 'keine', duration: 5, why: 'Aktiviert die Rumpfmuskulatur vor Kraftübungen.', steps: ['Bird Dog 10 pro Seite', 'Dead Bug 10 pro Seite', 'Glute Bridge 15 Wdh.'] },
+  { id: 'w4', name: 'Cool-down Dehnung 10min', category: 'warmup', equipment: 'Matte', duration: 10, why: 'Unterstützt die Regeneration und senkt den Puls sanft ab.', steps: ['Oberschenkel vorne/hinten je Seite 45 Sek.', 'Wadendehnung je Seite 45 Sek.', 'Hüftbeuger je Seite 45 Sek.'] },
+  { id: 'w5', name: 'Puls-Runterfahren Gehen 5min', category: 'warmup', equipment: 'keine', duration: 5, why: 'Bringt den Kreislauf sanft zur Ruhe nach intensiver Belastung.', steps: ['5 Min. langsames Gehen', 'Tiefe, ruhige Atmung'] },
+  { id: 'w6', name: 'Gelenkmobilisation 5min', category: 'warmup', equipment: 'keine', duration: 5, why: 'Bereitet die Gelenke schonend auf Bewegung vor.', steps: ['Sprunggelenkkreisen je Seite 10x', 'Hüftkreisen je Seite 10x', 'Schulterkreisen 10x'] },
+];
+const MODULES_BY_ID = Object.fromEntries(MODULES.map(m => [m.id, m]));
+
+function uid(base){ return base + '-' + Math.random().toString(36).slice(2, 8); }
+function instFrom(moduleId){ const m = MODULES_BY_ID[moduleId]; return { ...m, instanceId: uid(m.id) }; }
+
+function defaultPlans() {
+  const mk = (ids) => ids.map(instFrom);
+  return [
+    { id: 'p1', name: 'Ganzkörper A', items: mk(['w3', 'k1', 'k4', 'k6', 'k8', 'm6']) },
+    { id: 'p2', name: 'Ganzkörper B', items: mk(['w1', 'k2', 'k7', 'k10', 'k11', 'm2']) },
+    { id: 'p3', name: 'Long-Run-Tag', items: mk(['w1', 'l2', 'm1']) },
+    { id: 'p4', name: 'Kettlebell Flow', items: mk(['w1', 'k1', 'k2', 'k3', 'k9', 'm6']) },
+    { id: 'p5', name: 'Mobility Reset', items: mk(['m1', 'm3', 'm6', 'm8']) },
+  ];
+}
+function defaultWeek(plans) {
+  const week = { Mo: [], Di: [], Mi: [], Do: [], Fr: [], Sa: [], So: [] };
+  const copyItems = (planId) => {
+    const plan = plans.find(p => p.id === planId);
+    return plan ? plan.items.map(it => ({ ...it, instanceId: uid(it.id) })) : [];
+  };
+  week.Mo = copyItems('p1');
+  week.Do = copyItems('p3');
+  return week;
+}
+
+/* ---------- Firebase-Synchronisierung (kein Login, geteiltes Projekt noi-apps) ---------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyBuqUiYiHFBtrwjHi7Kb2Mt6OBy4AiP8mk",
+  authDomain: "noi-apps.firebaseapp.com",
+  databaseURL: "https://noi-apps-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "noi-apps",
+  storageBucket: "noi-apps.firebasestorage.app",
+  messagingSenderId: "875478674183",
+  appId: "1:875478674183:web:204b4723a1df01068c33a2"
+};
+let fbRef = null;
+try{
+  firebase.initializeApp(firebaseConfig);
+  fbRef = firebase.database().ref('takt/shared');
+}catch(e){ console.warn('Firebase konnte nicht initialisiert werden, App läuft rein lokal weiter.', e); }
+
+/* ---------- State ---------- */
+const state = {
+  loaded: false,
+  view: 'week', activeDay: null, activePlanId: null,
+  moduleDetail: null, addSheet: null, addSheetTab: 'plans',
+  libSearch: '', libFilter: 'all', settingsOpen: false,
+  plans: [], week: {},
+  connected: false, syncError: null,
+};
+let suppressNextFbEcho = false;
+
+function normalizeWeek(week){
+  const out = {};
+  DAYS.forEach(d => { out[d] = (week && Array.isArray(week[d])) ? week[d] : []; });
+  return out;
+}
+
+function loadLocal(){
+  try{
+    const saved = JSON.parse(localStorage.getItem('takt_data') || 'null');
+    if (saved && saved.plans && saved.week) return { plans: saved.plans, week: normalizeWeek(saved.week) };
+  }catch(e){}
+  const plans = defaultPlans();
+  const week = defaultWeek(plans);
+  return { plans, week: normalizeWeek(week) };
+}
+function saveLocal(){
+  localStorage.setItem('takt_data', JSON.stringify({ plans: state.plans, week: state.week }));
+}
+function persist(){
+  saveLocal();
+  if (fbRef){
+    suppressNextFbEcho = true;
+    fbRef.set({ plans: state.plans, week: state.week }).catch(err => {
+      state.syncError = err.message; render();
+    });
+  }
+}
+
+function startFirebaseSync(){
+  if (!fbRef) return;
+  fbRef.once('value').then(snap => {
+    const remote = snap.val();
+    if (remote && remote.plans && remote.week){
+      state.plans = remote.plans; state.week = normalizeWeek(remote.week); saveLocal();
+    } else {
+      fbRef.set({ plans: state.plans, week: state.week }).catch(()=>{});
+    }
+    state.connected = true; render();
+  }).catch(err => { state.syncError = err.message; render(); });
+
+  fbRef.on('value', snap => {
+    if (suppressNextFbEcho){ suppressNextFbEcho = false; return; }
+    if (drag) return;
+    const remote = snap.val();
+    if (remote && remote.plans && remote.week){
+      state.plans = remote.plans; state.week = normalizeWeek(remote.week); saveLocal();
+      state.connected = true; state.syncError = null;
+      render();
+    }
+  }, err => { state.syncError = err.message; state.connected = false; render(); });
+}
+
+/* ---------- Helpers ---------- */
+function fmtMin(min){ return min + ' Min.'; }
+function metaLabel(m){ return fmtMin(m.duration) + ' · ' + m.equipment; }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function getWeekDates(){
+  const today = new Date();
+  const dow = today.getDay();
+  const diffToMonday = dow === 0 ? -6 : 1 - dow;
+  const monday = new Date(today); monday.setDate(today.getDate() + diffToMonday);
+  return DAYS.map((_, i) => { const d = new Date(monday); d.setDate(monday.getDate() + i); return d; });
+}
+
+/* ---------- Navigation ---------- */
+function goWeek(){ state.view = 'week'; state.activeDay = null; state.activePlanId = null; render(); }
+function goPlans(){ state.view = 'plans'; state.activeDay = null; state.activePlanId = null; render(); }
+function goLibrary(){ state.view = 'library'; state.activeDay = null; state.activePlanId = null; render(); }
+function goBack(){
+  if (state.view === 'day') goWeek();
+  else if (state.view === 'planEdit') goPlans();
+}
+function openDay(day){ state.view = 'day'; state.activeDay = day; render(); }
+function openPlanEdit(id){ state.view = 'planEdit'; state.activePlanId = id; render(); }
+
+/* ---------- Modul-Detail ---------- */
+function openModuleDetail(m){
+  state.moduleDetail = { ...m, categoryColor: CATEGORY_META[m.category].color, categoryLabel: CATEGORY_META[m.category].label, metaLabel: metaLabel(m) };
+  render();
+}
+function closeModuleDetail(){ state.moduleDetail = null; render(); }
+
+/* ---------- Add-Sheet ---------- */
+function openAddSheet(){
+  if (state.view === 'day'){ state.addSheet = { type: 'day', key: state.activeDay }; state.addSheetTab = 'plans'; }
+  else if (state.view === 'planEdit'){ state.addSheet = { type: 'plan', key: state.activePlanId }; state.addSheetTab = 'library'; }
+  render();
+}
+function closeAddSheet(){ state.addSheet = null; state.libSearch = ''; state.libFilter = 'all'; render(); }
+function selectAddTab(tab){ state.addSheetTab = tab; render(); }
+
+function applyPlanToDay(day, planId){
+  const plan = state.plans.find(p => p.id === planId);
+  if (!plan) return;
+  const copies = plan.items.map(it => ({ ...it, instanceId: uid(it.id) }));
+  state.week[day] = [...state.week[day], ...copies];
+  persist(); closeAddSheet();
+}
+function addModuleToDay(day, moduleId){
+  state.week[day] = [...state.week[day], instFrom(moduleId)];
+  persist(); render();
+}
+function addModuleToPlan(planId, moduleId){
+  state.plans = state.plans.map(p => p.id === planId ? { ...p, items: [...p.items, instFrom(moduleId)] } : p);
+  persist(); render();
+}
+function removeFromDay(day, instanceId){
+  state.week[day] = state.week[day].filter(it => it.instanceId !== instanceId);
+  persist(); render();
+}
+function removeFromPlan(planId, instanceId){
+  state.plans = state.plans.map(p => p.id === planId ? { ...p, items: p.items.filter(it => it.instanceId !== instanceId) } : p);
+  persist(); render();
+}
+function createPlan(){
+  const id = uid('p');
+  state.plans = [...state.plans, { id, name: 'Neuer Plan', items: [] }];
+  state.view = 'planEdit'; state.activePlanId = id;
+  persist();
+}
+function onPlanNameChange(e){
+  state.plans = state.plans.map(p => p.id === state.activePlanId ? { ...p, name: e.target.value } : p);
+  persist();
+}
+function deleteActivePlan(){
+  if (!window.confirm('Diesen Trainingsplan wirklich löschen?')) return;
+  state.plans = state.plans.filter(p => p.id !== state.activePlanId);
+  state.view = 'plans'; state.activePlanId = null;
+  persist();
+}
+function onSearchChange(e){ state.libSearch = e.target.value; render(); }
+function setLibFilter(cat){ state.libFilter = cat; render(); }
+function openSettings(){ state.settingsOpen = true; render(); }
+function closeSettings(){ state.settingsOpen = false; render(); }
+
+/* ---------- Drag & Drop (Reihenfolge ändern) ---------- */
+let drag = null;
+function getList(listType, key){
+  return listType === 'day' ? state.week[key] : state.plans.find(p => p.id === key).items;
+}
+function setList(listType, key, items){
+  if (listType === 'day') state.week[key] = items;
+  else state.plans = state.plans.map(p => p.id === key ? { ...p, items } : p);
+}
+function startDrag(listType, key, instanceId, ev, el){
+  const rect = el.getBoundingClientRect();
+  const items = getList(listType, key);
+  drag = {
+    listType, key, instanceId, el,
+    startY: ev.clientY, itemHeight: Math.max(rect.height + 10, 40),
+    order: items.map(it => it.instanceId),
+    container: el.parentElement,
+  };
+  el.style.zIndex = 10;
+  el.style.boxShadow = '0 12px 28px rgba(0,0,0,0.5)';
+  el.style.position = 'relative';
+  window.addEventListener('pointermove', onDragMove);
+  window.addEventListener('pointerup', onDragEnd);
+}
+function onDragMove(ev){
+  if (!drag) return;
+  const deltaY = ev.clientY - drag.startY;
+  const shift = Math.round(deltaY / drag.itemHeight);
+  if (shift !== 0){
+    const order = drag.order.slice();
+    const idx = order.indexOf(drag.instanceId);
+    const newIdx = Math.max(0, Math.min(order.length - 1, idx + shift));
+    if (newIdx !== idx){
+      order.splice(idx, 1); order.splice(newIdx, 0, drag.instanceId);
+      drag.order = order;
+      drag.startY += shift * drag.itemHeight;
+      const byId = {}; getList(drag.listType, drag.key).forEach(it => byId[it.instanceId] = it);
+      setList(drag.listType, drag.key, order.map(id => byId[id]));
+      renderList();
+      drag.el = drag.container.querySelector('[data-instance="' + drag.instanceId + '"]');
+      drag.el.style.zIndex = 10;
+      drag.el.style.boxShadow = '0 12px 28px rgba(0,0,0,0.5)';
+    }
+  }
+  const finalDelta = ev.clientY - drag.startY;
+  drag.el.style.transform = 'translateY(' + finalDelta + 'px)';
+}
+function onDragEnd(){
+  if (!drag) return;
+  const listType = drag.listType, key = drag.key;
+  window.removeEventListener('pointermove', onDragMove);
+  window.removeEventListener('pointerup', onDragEnd);
+  drag = null;
+  persist();
+  render();
+}
+
+/* ---------- Rendering ---------- */
+function renderItemCard(it, listType, key){
+  const cat = CATEGORY_META[it.category];
+  return `<div class="item-card" data-instance="${it.instanceId}">
+    <div class="item-bar" style="background:${cat.color}"></div>
+    <div class="item-main" data-action="openDetail" data-instance="${it.instanceId}">
+      <div class="item-name">${esc(it.name)}</div>
+      <div class="item-meta">${esc(metaLabel(it))}</div>
+    </div>
+    <button class="remove-btn" data-action="remove" data-list="${listType}" data-key="${esc(key)}" data-instance="${it.instanceId}">×</button>
+  </div>`;
+}
+
+function attachDragHandlers(container, listType, key){
+  container.querySelectorAll('.item-card').forEach(el => {
+    el.addEventListener('pointerdown', (ev) => {
+      if (ev.target.closest('.remove-btn')) return;
+      startDrag(listType, key, el.dataset.instance, ev, el);
+    });
+  });
+}
+
+let lastListRender = null;
+function renderList(){
+  if (!lastListRender) return;
+  lastListRender();
+}
+
+function render(){
+  const app = document.getElementById('app');
+
+  if (!state.loaded){
+    app.innerHTML = `<div class="loading-screen">TAKT wird geladen…</div>`;
+    return;
+  }
+
+  const isWeek = state.view === 'week', isPlans = state.view === 'plans', isLibrary = state.view === 'library';
+  const isDay = state.view === 'day', isPlanEdit = state.view === 'planEdit';
+  const isTopLevel = isWeek || isPlans || isLibrary;
+  const isSubView = isDay || isPlanEdit;
+  const syncColor = state.connected ? 'var(--lime)' : (state.syncError ? 'var(--red)' : 'var(--ink-faint)');
+  const syncLabel = state.connected ? 'Verbunden – Echtzeit-Sync aktiv' : (state.syncError ? 'Fehler: ' + state.syncError : 'Verbinde…');
+
+  let topbarHtml = '';
+  if (isTopLevel){
+    topbarHtml = `<div class="topbar-row">
+      <div class="brand"><span class="brand-name">TAKT</span><div class="dot" style="background:${syncColor}"></div></div>
+      <button class="icon-btn" data-action="openSettings">⚙</button>
+    </div>`;
+  } else if (isDay){
+    const items = state.week[state.activeDay] || [];
+    const total = items.reduce((s, it) => s + it.duration, 0);
+    topbarHtml = `<div class="subbar">
+      <button class="back-btn" data-action="goBack">←</button>
+      <div style="flex:1;">
+        <div class="subbar-title">${DAY_LABELS[state.activeDay]}</div>
+        <div class="subbar-sub">${total > 0 ? fmtMin(total) : 'Kein Training geplant'}</div>
+      </div>
+    </div>`;
+  } else if (isPlanEdit){
+    const plan = state.plans.find(p => p.id === state.activePlanId);
+    topbarHtml = `<div class="subbar">
+      <button class="back-btn" data-action="goBack">←</button>
+      <input class="plan-name-input" id="planNameInput" value="${esc(plan.name)}">
+      <button class="delete-link" data-action="deletePlan">Löschen</button>
+    </div>`;
+  }
+
+  let contentHtml = '';
+  if (isWeek){
+    const dates = getWeekDates();
+    contentHtml = `<div class="view-pad"><div class="view-title">Diese Woche</div>` +
+      DAYS.map((day, i) => {
+        const items = state.week[day] || [];
+        const total = items.reduce((s, it) => s + it.duration, 0);
+        const byCat = {};
+        items.forEach(it => byCat[it.category] = (byCat[it.category] || 0) + it.duration);
+        const segments = CATEGORY_ORDER.filter(c => byCat[c]).map(c => `<div style="flex:${byCat[c]} 1 0;background:${CATEGORY_META[c].color}"></div>`).join('');
+        const names = items.map(it => it.name);
+        const chips = names.slice(0, 3).concat(names.length > 3 ? ['+' + (names.length - 3)] : []);
+        const dt = dates[i];
+        const dateStr = String(dt.getDate()).padStart(2, '0') + '.' + String(dt.getMonth() + 1).padStart(2, '0') + '.';
+        return `<div class="day-card" data-action="openDay" data-day="${day}">
+          <div class="day-card-head">
+            <div class="day-card-left"><span class="day-label">${DAY_LABELS[day]}</span><span class="day-date">${dateStr}</span></div>
+            <span class="day-total">${total > 0 ? fmtMin(total) : ''}</span>
+          </div>
+          ${items.length > 0 ? `<div class="segments">${segments}</div><div class="chips-row">${chips.map(c => `<span class="chip">${esc(c)}</span>`).join('')}</div>` : `<div class="empty-inline">Kein Training geplant</div>`}
+        </div>`;
+      }).join('') + `</div>`;
+  } else if (isDay){
+    const items = state.week[state.activeDay] || [];
+    contentHtml = `<div class="view-pad sub" id="listContainer">` +
+      (items.length === 0 ? `<div class="empty-block">Noch keine Einheiten für diesen Tag.<br>Tippe unten auf + um einen Plan anzuwenden oder ein Modul hinzuzufügen.</div>` : '') +
+      items.map(it => renderItemCard(it, 'day', state.activeDay)).join('') +
+      `</div>`;
+  } else if (isPlans){
+    contentHtml = `<div class="view-pad"><div class="view-title">Trainingspläne</div>` +
+      state.plans.map(p => `<div class="plan-card" data-action="openPlan" data-plan="${p.id}">
+        <div class="plan-card-head"><span class="plan-card-name">${esc(p.name)}</span><span class="plan-card-count">${fmtMin(p.items.reduce((s, it) => s + it.duration, 0))}</span></div>
+        <div class="plan-card-count">${p.items.length} Module</div>
+      </div>`).join('') +
+      `<button class="new-plan-btn" data-action="createPlan">+ Neuer Trainingsplan</button></div>`;
+  } else if (isPlanEdit){
+    const plan = state.plans.find(p => p.id === state.activePlanId);
+    contentHtml = `<div class="view-pad sub" id="listContainer">` +
+      (plan.items.length === 0 ? `<div class="empty-block">Noch keine Module in diesem Plan. Tippe auf + um Module hinzuzufügen.</div>` : '') +
+      plan.items.map(it => renderItemCard(it, 'plan', plan.id)).join('') +
+      `</div>`;
+  } else if (isLibrary){
+    contentHtml = renderLibrary(false);
+  }
+
+  let footerHtml = '';
+  if (isTopLevel){
+    footerHtml = `<div class="bottom-nav">
+      <button class="nav-btn ${isWeek ? 'active' : ''}" data-action="goWeek">Woche</button>
+      <button class="nav-btn ${isPlans ? 'active' : ''}" data-action="goPlans">Pläne</button>
+      <button class="nav-btn ${isLibrary ? 'active' : ''}" data-action="goLibrary">Bibliothek</button>
+    </div>`;
+  }
+  const fabHtml = (isDay || isPlanEdit) ? `<button class="fab" data-action="openAddSheet">+</button>` : '';
+
+  let overlaysHtml = '';
+  if (state.moduleDetail){
+    const md = state.moduleDetail;
+    overlaysHtml += `<div class="overlay" data-action="closeModuleDetail">
+      <div class="sheet" data-stop="1">
+        <div class="sheet-handle"></div>
+        <div class="md-cat-row"><div class="md-cat-dot" style="background:${md.categoryColor}"></div><span class="md-cat-label">${esc(md.categoryLabel)}</span></div>
+        <div class="md-name">${esc(md.name)}</div>
+        <div class="md-meta">${esc(md.metaLabel)}</div>
+        <div class="md-h">Warum</div>
+        <div class="md-why">${esc(md.why)}</div>
+        <div class="md-h">Ausführung</div>
+        ${md.steps.map((s, i) => `<div class="md-step"><div class="md-step-n">${i + 1}</div><div class="md-step-text">${esc(s)}</div></div>`).join('')}
+      </div>
+    </div>`;
+  }
+  if (state.addSheet){
+    overlaysHtml += renderAddSheet();
+  }
+  if (state.settingsOpen){
+    overlaysHtml += `<div class="overlay" data-action="closeSettings">
+      <div class="sheet" data-stop="1">
+        <div class="settings-head"><span class="settings-title">Einstellungen</span><button class="icon-btn" data-action="closeSettings">×</button></div>
+        <div class="settings-row"><div class="dot" style="background:${syncColor}"></div><span class="settings-label">${syncLabel}</span></div>
+        <div class="settings-note">TAKT synchronisiert automatisch über euer gemeinsames Firebase-Projekt – du und deine Partnerin seht immer denselben Trainingsplan, ohne euch anzumelden.</div>
+      </div>
+    </div>`;
+  }
+
+  app.innerHTML = `<div class="topbar">${topbarHtml}</div><div class="content">${contentHtml}</div>${footerHtml}${fabHtml}${overlaysHtml}`;
+
+  if (isPlanEdit){
+    const input = document.getElementById('planNameInput');
+    if (input) input.addEventListener('change', onPlanNameChange);
+  }
+  if ((isDay || isPlanEdit)){
+    const container = document.getElementById('listContainer');
+    const listType = isDay ? 'day' : 'plan';
+    const key = isDay ? state.activeDay : state.activePlanId;
+    if (container){
+      attachDragHandlers(container, listType, key);
+      lastListRender = () => {
+        const items = getList(listType, key);
+        container.innerHTML = (items.length === 0 ? (isDay ? `<div class="empty-block">Noch keine Einheiten für diesen Tag.<br>Tippe unten auf + um einen Plan anzuwenden oder ein Modul hinzuzufügen.</div>` : `<div class="empty-block">Noch keine Module in diesem Plan. Tippe auf + um Module hinzuzufügen.</div>`) : '') +
+          items.map(it => renderItemCard(it, listType, key)).join('');
+        attachDragHandlers(container, listType, key);
+      };
+    }
+  } else {
+    lastListRender = null;
+  }
+  if (state.addSheet){
+    const searchInput = document.getElementById('addLibSearch');
+    if (searchInput) searchInput.focus();
+  }
+}
+
+function renderLibrary(inAddSheet){
+  const search = state.libSearch.trim().toLowerCase();
+  const filtered = MODULES.filter(m =>
+    (state.libFilter === 'all' || m.category === state.libFilter) &&
+    (!search || m.name.toLowerCase().includes(search))
+  );
+  const chips = [{ key: 'all', label: 'Alle' }].concat(CATEGORY_ORDER.map(c => ({ key: c, label: CATEGORY_META[c].label })));
+  const chipsHtml = chips.map(c => `<button class="cat-chip ${state.libFilter === c.key ? 'active' : ''}" data-action="setLibFilter" data-cat="${c.key}">${esc(c.label)}</button>`).join('');
+
+  if (inAddSheet){
+    const itemsHtml = filtered.map(m => `<div class="add-lib-row" data-action="addModule" data-module="${m.id}">
+      <div class="item-bar" style="width:6px;height:28px;background:${CATEGORY_META[m.category].color}"></div>
+      <div style="flex:1;"><div class="add-lib-name">${esc(m.name)}</div><div class="add-lib-meta">${esc(metaLabel(m))}</div></div>
+      <span class="add-plus">+</span>
+    </div>`).join('');
+    return `<input class="search-input" id="addLibSearch" placeholder="Modul suchen…" value="${esc(state.libSearch)}" style="margin-bottom:4px;">
+      <div class="chip-row">${chipsHtml}</div>${itemsHtml}`;
+  }
+
+  return `<div class="view-pad">
+    <input class="search-input" id="addLibSearch" placeholder="Modul suchen…" value="${esc(state.libSearch)}">
+    <div class="chip-row">${chipsHtml}</div>
+    ${filtered.map(m => `<div class="lib-item" data-action="openModule" data-module="${m.id}">
+      <div class="item-bar" style="background:${CATEGORY_META[m.category].color}"></div>
+      <div style="flex:1;"><div class="item-name">${esc(m.name)}</div><div class="item-meta">${esc(metaLabel(m))}</div></div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function renderAddSheet(){
+  const addSheet = state.addSheet;
+  const showTabs = addSheet.type === 'day';
+  const tab = state.addSheetTab;
+  const showPlans = showTabs && tab === 'plans';
+  const showLibrary = !showTabs || tab === 'library';
+
+  const tabsHtml = showTabs ? `<div class="add-tabs">
+    <button class="add-tab ${tab === 'plans' ? 'active' : ''}" data-action="selectAddTab" data-tab="plans">Plan anwenden</button>
+    <button class="add-tab ${tab === 'library' ? 'active' : ''}" data-action="selectAddTab" data-tab="library">Modul hinzufügen</button>
+  </div>` : '';
+
+  let bodyHtml = '';
+  if (showPlans){
+    bodyHtml = state.plans.map(p => `<div class="add-plan-row" data-action="applyPlan" data-plan="${p.id}">
+      <span style="font-size:15px;font-weight:600;">${esc(p.name)}</span>
+      <span style="font-size:13px;color:var(--ink-soft);">${p.items.length} Module</span>
+    </div>`).join('');
+  } else if (showLibrary){
+    bodyHtml = renderLibrary(true);
+  }
+
+  return `<div class="overlay" data-action="closeAddSheet">
+    <div class="sheet add-sheet" data-stop="1">
+      <div class="sheet-handle"></div>
+      ${tabsHtml}
+      <div class="add-body">${bodyHtml}</div>
+      <button class="done-btn" data-action="closeAddSheet">Fertig</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- Event-Delegation ---------- */
+document.getElementById('app').addEventListener('click', (ev) => {
+  if (ev.target.closest('[data-stop]') && !ev.target.closest('[data-action]')) return;
+  const el = ev.target.closest('[data-action]');
+  if (!el) return;
+  const action = el.dataset.action;
+  switch(action){
+    case 'goWeek': goWeek(); break;
+    case 'goPlans': goPlans(); break;
+    case 'goLibrary': goLibrary(); break;
+    case 'goBack': goBack(); break;
+    case 'openDay': openDay(el.dataset.day); break;
+    case 'openPlan': openPlanEdit(el.dataset.plan); break;
+    case 'deletePlan': deleteActivePlan(); break;
+    case 'openDetail': {
+      const inst = el.dataset.instance;
+      const listType = state.view === 'day' ? 'day' : 'plan';
+      const key = state.view === 'day' ? state.activeDay : state.activePlanId;
+      const it = getList(listType, key).find(x => x.instanceId === inst);
+      if (it) openModuleDetail(it);
+      break;
+    }
+    case 'remove': {
+      const listType = el.dataset.list, key = el.dataset.key, inst = el.dataset.instance;
+      if (listType === 'day') removeFromDay(key, inst); else removeFromPlan(key, inst);
+      break;
+    }
+    case 'createPlan': createPlan(); break;
+    case 'closeModuleDetail': closeModuleDetail(); break;
+    case 'openModule': {
+      const m = MODULES_BY_ID[el.dataset.module];
+      if (m) openModuleDetail(m);
+      break;
+    }
+    case 'openAddSheet': openAddSheet(); break;
+    case 'closeAddSheet': closeAddSheet(); break;
+    case 'selectAddTab': selectAddTab(el.dataset.tab); break;
+    case 'applyPlan': applyPlanToDay(state.addSheet.key, el.dataset.plan); break;
+    case 'addModule': {
+      const moduleId = el.dataset.module;
+      if (state.addSheet.type === 'day') addModuleToDay(state.addSheet.key, moduleId);
+      else addModuleToPlan(state.addSheet.key, moduleId);
+      break;
+    }
+    case 'setLibFilter': setLibFilter(el.dataset.cat); break;
+    case 'openSettings': openSettings(); break;
+    case 'closeSettings': closeSettings(); break;
+  }
+});
+document.getElementById('app').addEventListener('input', (ev) => {
+  if (ev.target.id === 'addLibSearch') onSearchChange(ev);
+});
+
+/* ---------- Start ---------- */
+(function init(){
+  const local = loadLocal();
+  state.plans = local.plans; state.week = local.week; state.loaded = true;
+  render();
+  startFirebaseSync();
+})();
+</script>
+</body>
+</html>
