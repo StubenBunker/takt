@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#141210">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#F7F6F1">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="TAKT">
 <meta name="mobile-web-app-capable" content="yes">
 <title>TAKT – Trainingsplan</title>
@@ -15,20 +15,21 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <style>
   :root{
-    --bg:#141210;
-    --surface:#1c1a17;
-    --surface2:#242220;
-    --border:#2f2c28;
-    --border-dash:#3a362f;
-    --ink:#f4f2ec;
-    --ink-soft:#a8a39a;
-    --ink-faint:#6b6760;
+    --bg:#F7F6F1;
+    --surface:#FFFFFF;
+    --surface2:#F0EEE6;
+    --border:#E7E3D9;
+    --border-dash:#D6D0C0;
+    --ink:#221F1B;
+    --ink-soft:#6E6A61;
+    --ink-faint:#9C978B;
     --lime:#C6FF4D;
-    --red:#ff6b57;
-    --lauf:#e8825a;
-    --kraft:#e5583f;
-    --mobility:#5aa8c9;
-    --warmup:#b48fd6;
+    --accent:#5C8A00;
+    --red:#D6483A;
+    --lauf:#D9713E;
+    --kraft:#D14B34;
+    --mobility:#3E86A8;
+    --warmup:#9868C4;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0; background:var(--bg); color:var(--ink);
@@ -44,7 +45,6 @@
   .brand{display:flex; align-items:center; gap:8px;}
   .brand-name{font-size:17px; font-weight:800; letter-spacing:0.03em;}
   .dot{width:7px; height:7px; border-radius:50%;}
-  .icon-btn{background:var(--surface2); border:1px solid var(--border); color:var(--ink-soft); width:36px; height:36px; border-radius:50%; font-size:15px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
   .subbar{display:flex; align-items:center; gap:10px; padding:calc(env(safe-area-inset-top) + 14px) 16px 14px;}
   .back-btn{background:var(--surface2); border:1px solid var(--border); color:var(--ink); width:36px; height:36px; border-radius:50%; font-size:18px; flex-shrink:0; display:flex; align-items:center; justify-content:center;}
   .subbar-title{font-size:17px; font-weight:700;}
@@ -81,20 +81,21 @@
   .plan-card-head{display:flex; justify-content:space-between;}
   .plan-card-name{font-size:16px; font-weight:600;}
   .plan-card-count{font-size:13px; color:var(--ink-soft);}
-  .new-plan-btn{margin-top:4px; background:var(--surface2); border:1px dashed var(--border-dash); color:var(--lime); border-radius:14px; padding:16px; font-size:15px; font-weight:600;}
+  .new-plan-btn{margin-top:4px; background:var(--surface2); border:1px dashed var(--border-dash); color:var(--accent); border-radius:14px; padding:16px; font-size:15px; font-weight:600;}
 
   .search-input{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; color:var(--ink); font-size:15px; outline:none; width:100%;}
   .search-input::placeholder{color:var(--ink-faint);}
   .chip-row{display:flex; gap:8px; overflow-x:auto; padding-bottom:2px;}
   .cat-chip{flex-shrink:0; padding:8px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--ink-soft); font-size:13px; white-space:nowrap;}
-  .cat-chip.active{border-color:var(--lime); background:rgba(198,255,77,0.12); color:var(--lime);}
+  .cat-chip.active{border-color:var(--accent); background:rgba(92,138,0,0.1); color:var(--accent);}
   .lib-item{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px; display:flex; align-items:center; gap:12px;}
+  .lib-quickadd{background:var(--surface2); border:1px solid var(--border); color:var(--accent); width:34px; height:34px; border-radius:50%; font-size:16px; font-weight:700; flex-shrink:0; display:flex; align-items:center; justify-content:center; line-height:1;}
 
   .bottom-nav{position:fixed; bottom:0; left:0; right:0; max-width:520px; margin:0 auto; background:var(--surface); border-top:1px solid var(--border); display:flex; padding:8px 8px calc(8px + env(safe-area-inset-bottom)); gap:6px; z-index:40;}
   .nav-btn{flex:1; padding:10px 4px; border-radius:12px; border:none; font-size:12.5px; font-weight:600; background:transparent; color:var(--ink-soft);}
-  .nav-btn.active{background:var(--surface2); color:var(--lime);}
+  .nav-btn.active{background:var(--surface2); color:var(--accent);}
 
-  .fab{position:fixed; bottom:24px; right:calc(50% - 260px + 20px); width:56px; height:56px; border-radius:50%; background:var(--lime); color:var(--bg); font-size:28px; line-height:1; border:none; box-shadow:0 8px 24px rgba(198,255,77,0.35); z-index:50; display:flex; align-items:center; justify-content:center;}
+  .fab{position:fixed; bottom:24px; right:calc(50% - 260px + 20px); width:56px; height:56px; border-radius:50%; background:var(--lime); color:var(--ink); font-size:28px; line-height:1; border:none; box-shadow:0 8px 24px rgba(92,138,0,0.25); z-index:50; display:flex; align-items:center; justify-content:center;}
   @media (max-width:559px){ .fab{ right:20px; } }
 
   .overlay{position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:100; display:flex; align-items:flex-end;}
@@ -105,29 +106,24 @@
   .md-cat-label{font-size:12px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.05em;}
   .md-name{font-size:22px; font-weight:700; margin-bottom:4px;}
   .md-meta{font-size:13px; color:var(--ink-soft); margin-bottom:20px;}
-  .md-h{font-size:13px; font-weight:700; color:var(--lime); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;}
+  .md-h{font-size:13px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;}
   .md-why{font-size:15px; line-height:1.5; margin-bottom:20px;}
   .md-step{display:flex; gap:10px; margin-bottom:10px;}
   .md-step-n{width:22px; height:22px; border-radius:50%; background:var(--surface2); color:var(--ink-soft); font-size:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
   .md-step-text{font-size:14.5px; line-height:1.5;}
 
-  .add-sheet{padding:20px 16px 24px; display:flex; flex-direction:column;}
+  .add-sheet{padding:20px 16px 24px; display:flex; flex-direction:column; overflow-y:hidden;}
   .add-tabs{display:flex; gap:8px; margin-bottom:16px;}
   .add-tab{flex:1; padding:10px; border-radius:10px; border:none; font-size:13.5px; font-weight:600; background:var(--surface2); color:var(--ink-soft);}
-  .add-tab.active{background:var(--lime); color:var(--bg);}
-  .add-body{overflow-y:auto; display:flex; flex-direction:column; gap:8px; flex:1;}
-  .add-plan-row{background:var(--surface2); border-radius:12px; padding:14px; display:flex; justify-content:space-between; align-items:center;}
+  .add-tab.active{background:var(--lime); color:var(--ink);}
+  .add-body{overflow-y:auto; display:flex; flex-direction:column; gap:8px; flex:1; min-height:0;}
+  .add-lib-header{position:sticky; top:0; background:var(--surface); z-index:2; display:flex; flex-direction:column; gap:8px; padding-bottom:6px;}
+  .add-plan-row{background:var(--surface2); border-radius:12px; padding:14px; display:flex; justify-content:space-between; align-items:center; width:100%; border:none; text-align:left; color:var(--ink);}
   .add-lib-row{background:var(--surface2); border-radius:12px; padding:14px; display:flex; align-items:center; gap:10px;}
   .add-lib-name{font-size:14.5px; font-weight:600;}
   .add-lib-meta{font-size:12px; color:var(--ink-soft);}
-  .add-plus{color:var(--lime); font-size:20px;}
-  .done-btn{margin-top:14px; background:var(--lime); color:var(--bg); border:none; border-radius:12px; padding:14px; font-size:15px; font-weight:700; flex-shrink:0;}
-
-  .settings-row{display:flex; align-items:center; gap:8px; margin-bottom:6px;}
-  .settings-label{font-size:13.5px; color:var(--ink-soft);}
-  .settings-note{font-size:12.5px; color:var(--ink-faint); line-height:1.5; margin-bottom:4px;}
-  .settings-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;}
-  .settings-title{font-size:19px; font-weight:700;}
+  .add-plus{color:var(--accent); font-size:20px;}
+  .done-btn{margin-top:14px; background:var(--lime); color:var(--ink); border:none; border-radius:12px; padding:14px; font-size:15px; font-weight:700; flex-shrink:0;}
 
   .loading-screen{min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); color:var(--ink-soft); font-size:14px;}
 </style>
@@ -232,8 +228,8 @@ try{
 const state = {
   loaded: false,
   view: 'week', activeDay: null, activePlanId: null,
-  moduleDetail: null, addSheet: null, addSheetTab: 'plans',
-  libSearch: '', libFilter: 'all', settingsOpen: false,
+  moduleDetail: null, addSheet: null, addSheetTab: 'plans', dayPicker: null,
+  libSearch: '', libFilter: 'all',
   plans: [], week: {},
   connected: false, syncError: null,
 };
@@ -372,8 +368,15 @@ function deleteActivePlan(){
 }
 function onSearchChange(e){ state.libSearch = e.target.value; render(); }
 function setLibFilter(cat){ state.libFilter = cat; render(); }
-function openSettings(){ state.settingsOpen = true; render(); }
-function closeSettings(){ state.settingsOpen = false; render(); }
+
+/* ---------- Schnell-Hinzufügen aus der Bibliothek ---------- */
+function openDayPicker(moduleId){ state.dayPicker = { moduleId }; render(); }
+function closeDayPicker(){ state.dayPicker = null; render(); }
+function quickAddToDay(day){
+  const moduleId = state.dayPicker.moduleId;
+  state.dayPicker = null;
+  addModuleToDay(day, moduleId);
+}
 
 /* ---------- Drag & Drop (Reihenfolge ändern) ---------- */
 let drag = null;
@@ -392,16 +395,21 @@ function startDrag(listType, key, instanceId, ev, el){
     startY: ev.clientY, itemHeight: Math.max(rect.height + 10, 40),
     order: items.map(it => it.instanceId),
     container: el.parentElement,
+    moved: false,
   };
-  el.style.zIndex = 10;
-  el.style.boxShadow = '0 12px 28px rgba(0,0,0,0.5)';
-  el.style.position = 'relative';
   window.addEventListener('pointermove', onDragMove);
   window.addEventListener('pointerup', onDragEnd);
 }
 function onDragMove(ev){
   if (!drag) return;
   const deltaY = ev.clientY - drag.startY;
+  if (!drag.moved){
+    if (Math.abs(deltaY) < 6) return;
+    drag.moved = true;
+    drag.el.style.position = 'relative';
+    drag.el.style.zIndex = 10;
+    drag.el.style.boxShadow = '0 12px 28px rgba(0,0,0,0.25)';
+  }
   const shift = Math.round(deltaY / drag.itemHeight);
   if (shift !== 0){
     const order = drag.order.slice();
@@ -415,8 +423,9 @@ function onDragMove(ev){
       setList(drag.listType, drag.key, order.map(id => byId[id]));
       renderList();
       drag.el = drag.container.querySelector('[data-instance="' + drag.instanceId + '"]');
+      drag.el.style.position = 'relative';
       drag.el.style.zIndex = 10;
-      drag.el.style.boxShadow = '0 12px 28px rgba(0,0,0,0.5)';
+      drag.el.style.boxShadow = '0 12px 28px rgba(0,0,0,0.25)';
     }
   }
   const finalDelta = ev.clientY - drag.startY;
@@ -424,12 +433,11 @@ function onDragMove(ev){
 }
 function onDragEnd(){
   if (!drag) return;
-  const listType = drag.listType, key = drag.key;
   window.removeEventListener('pointermove', onDragMove);
   window.removeEventListener('pointerup', onDragEnd);
+  const wasMoved = drag.moved;
   drag = null;
-  persist();
-  render();
+  if (wasMoved){ persist(); render(); }
 }
 
 /* ---------- Rendering ---------- */
@@ -468,6 +476,12 @@ function render(){
     return;
   }
 
+  const activeEl = document.activeElement;
+  let focusInfo = null;
+  if (activeEl && activeEl.id && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA') && app.contains(activeEl)){
+    focusInfo = { id: activeEl.id, start: activeEl.selectionStart, end: activeEl.selectionEnd };
+  }
+
   const isWeek = state.view === 'week', isPlans = state.view === 'plans', isLibrary = state.view === 'library';
   const isDay = state.view === 'day', isPlanEdit = state.view === 'planEdit';
   const isTopLevel = isWeek || isPlans || isLibrary;
@@ -478,8 +492,7 @@ function render(){
   let topbarHtml = '';
   if (isTopLevel){
     topbarHtml = `<div class="topbar-row">
-      <div class="brand"><span class="brand-name">TAKT</span><div class="dot" style="background:${syncColor}"></div></div>
-      <button class="icon-btn" data-action="openSettings">⚙</button>
+      <div class="brand"><span class="brand-name">TAKT</span><div class="dot" style="background:${syncColor}" title="${esc(syncLabel)}"></div></div>
     </div>`;
   } else if (isDay){
     const items = state.week[state.activeDay] || [];
@@ -574,14 +587,8 @@ function render(){
   if (state.addSheet){
     overlaysHtml += renderAddSheet();
   }
-  if (state.settingsOpen){
-    overlaysHtml += `<div class="overlay" data-action="closeSettings">
-      <div class="sheet" data-stop="1">
-        <div class="settings-head"><span class="settings-title">Einstellungen</span><button class="icon-btn" data-action="closeSettings">×</button></div>
-        <div class="settings-row"><div class="dot" style="background:${syncColor}"></div><span class="settings-label">${syncLabel}</span></div>
-        <div class="settings-note">TAKT synchronisiert automatisch über euer gemeinsames Firebase-Projekt – du und deine Partnerin seht immer denselben Trainingsplan, ohne euch anzumelden.</div>
-      </div>
-    </div>`;
+  if (state.dayPicker){
+    overlaysHtml += renderDayPicker();
   }
 
   app.innerHTML = `<div class="topbar">${topbarHtml}</div><div class="content">${contentHtml}</div>${footerHtml}${fabHtml}${overlaysHtml}`;
@@ -606,7 +613,14 @@ function render(){
   } else {
     lastListRender = null;
   }
-  if (state.addSheet){
+
+  if (focusInfo){
+    const el = document.getElementById(focusInfo.id);
+    if (el){
+      el.focus();
+      try{ el.setSelectionRange(focusInfo.start, focusInfo.end); }catch(e){}
+    }
+  } else if (state.addSheet){
     const searchInput = document.getElementById('addLibSearch');
     if (searchInput) searchInput.focus();
   }
@@ -627,17 +641,35 @@ function renderLibrary(inAddSheet){
       <div style="flex:1;"><div class="add-lib-name">${esc(m.name)}</div><div class="add-lib-meta">${esc(metaLabel(m))}</div></div>
       <span class="add-plus">+</span>
     </div>`).join('');
-    return `<input class="search-input" id="addLibSearch" placeholder="Modul suchen…" value="${esc(state.libSearch)}" style="margin-bottom:4px;">
-      <div class="chip-row">${chipsHtml}</div>${itemsHtml}`;
+    return `<div class="add-lib-header">
+      <input class="search-input" id="addLibSearch" placeholder="Modul suchen…" value="${esc(state.libSearch)}">
+      <div class="chip-row">${chipsHtml}</div>
+    </div>${itemsHtml}`;
   }
 
   return `<div class="view-pad">
     <input class="search-input" id="addLibSearch" placeholder="Modul suchen…" value="${esc(state.libSearch)}">
     <div class="chip-row">${chipsHtml}</div>
-    ${filtered.map(m => `<div class="lib-item" data-action="openModule" data-module="${m.id}">
+    ${filtered.map(m => `<div class="lib-item">
       <div class="item-bar" style="background:${CATEGORY_META[m.category].color}"></div>
-      <div style="flex:1;"><div class="item-name">${esc(m.name)}</div><div class="item-meta">${esc(metaLabel(m))}</div></div>
+      <div style="flex:1;" data-action="openModule" data-module="${m.id}"><div class="item-name">${esc(m.name)}</div><div class="item-meta">${esc(metaLabel(m))}</div></div>
+      <button class="lib-quickadd" data-action="quickAdd" data-module="${m.id}">+</button>
     </div>`).join('')}
+  </div>`;
+}
+
+function renderDayPicker(){
+  const m = MODULES_BY_ID[state.dayPicker.moduleId];
+  return `<div class="overlay" data-action="closeDayPicker">
+    <div class="sheet" data-stop="1">
+      <div class="sheet-handle"></div>
+      <div class="md-name" style="margin-bottom:16px;">${esc(m.name)} hinzufügen zu…</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        ${DAYS.map(d => `<button class="add-plan-row" data-action="quickAddDay" data-day="${d}">
+          <span style="font-size:15px;font-weight:600;">${DAY_LABELS[d]}</span>
+        </button>`).join('')}
+      </div>
+    </div>
   </div>`;
 }
 
@@ -718,8 +750,9 @@ document.getElementById('app').addEventListener('click', (ev) => {
       break;
     }
     case 'setLibFilter': setLibFilter(el.dataset.cat); break;
-    case 'openSettings': openSettings(); break;
-    case 'closeSettings': closeSettings(); break;
+    case 'quickAdd': openDayPicker(el.dataset.module); break;
+    case 'closeDayPicker': closeDayPicker(); break;
+    case 'quickAddDay': quickAddToDay(el.dataset.day); break;
   }
 });
 document.getElementById('app').addEventListener('input', (ev) => {
